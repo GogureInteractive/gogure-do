@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gogure Do — ADHS-optimierte Fokus-App von Gogure Interactive Labs" />
+  <title>Gogure Do — Fokus &amp; Planung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">Do</span><span class="brand-name">Gogure&nbsp;Do</span></div>
+    <nav class="tabs">
+      <button class="nav-item active" data-view="focus"><span class="material-symbols-outlined">timer</span>Fokus</button>
+      <button class="nav-item" data-view="plan"><span class="material-symbols-outlined">checklist</span>Planen</button>
+      <button class="nav-item" data-view="calendar"><span class="material-symbols-outlined">calendar_month</span>Kalender</button>
+      <button class="nav-item" data-view="people"><span class="material-symbols-outlined">group</span>Menschen</button>
+    </nav>
+    <div class="top-actions">
+      <button id="export-data" class="tonal" title="Alle Daten exportieren (DSGVO: Datenübertragbarkeit)">Export</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============================ FOCUS ============================ -->
+    <section id="view-focus" class="view">
+      <div class="focus-grid">
+        <div class="card timer-card">
+          <div class="mode-chips">
+            <button class="mode-chip active" data-mode="focus">Fokus</button>
+            <button class="mode-chip" data-mode="short">Kurzpause</button>
+            <button class="mode-chip" data-mode="long">Langpause</button>
+          </div>
+          <div class="ring-wrap">
+            <svg id="progress-ring" viewBox="0 0 200 200" width="240" height="240">
+              <circle cx="100" cy="100" r="88" class="ring-bg" />
+              <circle cx="100" cy="100" r="88" class="ring-fg" />
+            </svg>
+            <div class="ring-center">
+              <div id="time-display">25:00</div>
+              <div id="active-task" class="muted small"></div>
+            </div>
+          </div>
+          <div class="timer-controls">
+            <button id="btn-start" class="filled">Start</button>
+            <button id="btn-pause" class="tonal" title="Timer pausieren">Pause</button>
+            <button id="btn-reset" class="outlined">Reset</button>
+          </div>
+          <div class="custom-duration">
+            <label for="custom-min">Eigene Dauer (Min)</label>
+            <input id="custom-min" type="number" min="1" max="600" placeholder="z. B. 15" />
+            <button id="log-custom" class="text-btn" title="Manuell als abgeschlossene Einheit zählen">✓ zählen</button>
+          </div>
+        </div>
+
+        <div class="card stats-card">
+          <h2>Heute</h2>
+          <div class="stat-row">
+            <div class="stat"><div class="stat-num" id="stat-sessions">0</div><div class="stat-label">Einheiten</div></div>
+            <div class="stat"><div class="stat-num" id="stat-minutes">0</div><div class="stat-label">Minuten</div></div>
+            <div class="stat"><div class="stat-num" id="stat-goal">100</div><div class="stat-label">Ziel (Min)</div></div>
+          </div>
+          <div class="goal-track"><div id="goal-bar"></div></div>
+          <div id="goal-label" class="muted small">0 / 100 Min heute (0%)</div>
+          <h3 class="mini-title">Letzte 7 Tage</h3>
+          <div id="week-chart" class="week-chart"></div>
+          <div class="muted small">Gesamt: <strong id="total-minutes">0</strong> Fokus-Minuten · <span id="open-counts"></span></div>
+          <p class="hint">💡 Tipp: Kleine Schritte sind besser als perfekte Pläne. Starte einfach mit 10 Minuten.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ PLAN ============================ -->
+    <section id="view-plan" class="view hidden">
+      <div class="quick-add">
+        <button class="filled" data-new="task">+ To-do</button>
+        <button class="tonal" data-new="idea">+ Idee</button>
+        <button class="tonal" data-new="memo">+ Memo</button>
+        <button class="outlined" id="new-project-btn">+ Projekt</button>
+      </div>
+      <div class="plan-columns">
+        <div class="column"><h2>To-dos</h2><div id="todos-list"></div></div>
+        <div class="column"><h2>Ideen</h2><div id="ideas-list"></div></div>
+        <div class="column"><h2>Memos</h2><div id="memos-list"></div></div>
+      </div>
+      <h2 class="section-title">Projekte</h2>
+      <div id="projects-list" class="project-grid"></div>
+    </section>
+
+    <!-- ============================ CALENDAR ============================ -->
+    <section id="view-calendar" class="view hidden">
+      <div class="cal-header">
+        <button id="cal-prev" class="icon-btn">‹</button>
+        <h2 id="cal-title"></h2>
+        <button id="cal-next" class="icon-btn">›</button>
+        <span class="grow"></span>
+        <button id="new-event-btn" class="filled">+ Termin</button>
+      </div>
+      <div class="card">
+        <div class="cal-week"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+        <div id="cal-grid" class="cal-grid"></div>
+      </div>
+      <h2 class="section-title">Anstehende Termine</h2>
+      <div id="upcoming"></div>
+    </section>
+
+    <!-- ============================ PEOPLE ============================ -->
+    <section id="view-people" class="view hidden">
+      <div class="cal-header">
+        <h2>Team &amp; Einladungen</h2>
+        <span class="grow"></span>
+        <button id="new-invite-btn" class="filled">+ Person einladen</button>
+      </div>
+      <div id="invite-list"></div>
+      <div class="card privacy-card">
+        <h2>🔐 Datenschutz (DSGVO)</h2>
+        <p class="muted small">Alle Daten werden ausschließlich lokal in deinem Browser gespeichert (localStorage).
+        Es findet keine Übertragung an Server statt, sofern du keinen Sync-Backend konfigurierst.
+        Mit „Export“ erhältst du eine Kopie aller Daten (Art. 20 DSGVO), mit „Alle Daten löschen“ die vollständige Löschung (Art. 17 DSGVO).</p>
+        <button id="delete-all" class="danger outlined">Alle Daten löschen</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ============================ DIALOGS ============================ -->
+  <dialog id="entity-dialog" class="sheet">
+    <form id="entity-form" method="dialog">
+      <h2>Neu</h2>
+      <label>Titel<input id="entity-title" required placeholder="Was ist zu tun? Nutze @namen für Erwähnungen" /></label>
+      <label>Notizen<textarea id="entity-notes" rows="3" placeholder="Details, Links, @mentions …"></textarea></label>
+      <div class="two-col">
+        <label>Typ<select id="entity-type">
+          <option value="task">To-do</option><option value="project-task">Projektaufgabe</option>
+          <option value="idea">Idee</option><option value="memo">Memo</option>
+        </select></label>
+        <label>Priorität<select id="entity-priority">
+          <option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option>
+        </select></label>
+      </div>
+      <div class="two-col">
+        <label>Fällig am<input id="entity-due" type="date" /></label>
+        <label>Delegieren an<input id="entity-assignee" placeholder="@name" /></label>
+      </div>
+      <label>Projekt<select id="entity-project"><option value="">— ohne Projekt —</option></select></label>
+      <menu><button type="button" class="cancel text-btn">Abbrechen</button><button class="filled" type="submit">Speichern</button></menu>
+    </form>
+  </dialog>
+
+  <dialog id="project-dialog" class="sheet">
+    <form id="project-form" method="dialog">
+      <h2>Projekt</h2>
+      <label>Name<input id="project-name" required /></label>
+      <label>Farbe<input id="project-color" type="color" value="#6750A4" /></label>
+      <menu><button type="button" class="cancel text-btn">Abbrechen</button><button class="filled" type="submit">Speichern</button></menu>
+    </form>
+  </dialog>
+
+  <dialog id="event-dialog" class="sheet">
+    <form id="event-form" method="dialog">
+      <h2>Termin</h2>
+      <label>Titel<input id="event-title" required /></label>
+      <div class="two-col">
+        <label>Datum<input id="event-date" type="date" required /></label>
+        <label>Uhrzeit<input id="event-time" type="time" /></label>
+      </div>
+      <label>Dauer (Min)<input id="event-duration" type="number" min="5" value="30" /></label>
+      <label>Beschreibung<textarea id="event-desc" rows="2"></textarea></label>
+      <menu><button type="button" class="cancel text-btn">Abbrechen</button><button class="filled" type="submit">Speichern</button></menu>
+    </form>
+  </dialog>
+
+  <dialog id="invite-dialog" class="sheet">
+    <form id="invite-form" method="dialog">
+      <h2>Person einladen</h2>
+      <label>E-Mail<input id="invite-email" type="email" required placeholder="max@beispiel.de" /></label>
+      <label>Rolle<select id="invite-role">
+        <option value="viewer">Kann ansehen</option>
+        <option value="editor" selected>Kann bearbeiten</option>
+        <option value="member">Mitglied</option>
+      </select></label>
+      <p class="muted small">Hinweis: Die E-Mail-Adresse wird nur lokal gespeichert bzw. an dein selbst gehostetes Sync-Backend übermittelt, wenn dieses konfiguriert und aktiv ist.</p>
+      <menu><button type="button" class="cancel text-btn">Abbrechen</button><button class="filled" type="submit">Einladen</button></menu>
+    </form>
+  </dialog>
+
+  <footer class="foot">Gogure Do · gebaut von <strong>Gogure Interactive Labs</strong> · MIT-Lizenz · Daten bleiben auf deinem Gerät</footer>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
