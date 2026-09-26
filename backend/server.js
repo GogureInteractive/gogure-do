@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Gogure Do — Optional sync backend (zero-dependency Node.js, >= 18)
+// Gogure Do — Optional sync backend (zero-dependency Node.js, >= 22)
 //
 // Purpose: lets a user who *explicitly enables it* in Settings sync their
 // invites and workspace snapshot to their own self-hosted server (e.g. a
@@ -43,9 +43,17 @@ async function ensureStore() {
   }
 }
 async function readJson(file) {
-  return JSON.parse(await readFile(file, "utf8"));
+  try {
+    return JSON.parse(await readFile(file, "utf8"));
+  } catch (err) {
+    if (err.code !== "ENOENT") throw err;
+    // Store not initialised yet (e.g. `handle` imported without running the
+    // CLI entry point): treat a missing file as the empty default.
+    return file === INVITES_FILE ? [] : {};
+  }
 }
 async function writeJson(file, value) {
+  await mkdir(DATA_DIR, { recursive: true });
   // Atomic-ish write: temp file + rename avoids corruption on crash.
   const tmp = file + ".tmp-" + crypto.randomBytes(4).toString("hex");
   await writeFile(tmp, JSON.stringify(value, null, 2), "utf8");
@@ -109,7 +117,18 @@ export function normalizeInvite(raw, now = new Date().toISOString()) {
 }
 
 // ------------------------------------------------------------------- router
+/** HTTP request handler. Never rejects: errors are mapped to JSON responses. */
 export async function handle(req, res) {
+  try {
+    await route(req, res);
+  } catch (err) {
+    const status = err.status || (/too large|invalid JSON/.test(err.message) ? 400 : 500);
+    // Do not leak internal error details (paths, stack context) on 5xx.
+    send(res, status, { error: status >= 500 ? "internal error" : err.message });
+  }
+}
+
+async function route(req, res) {
   const url = new URL(req.url, "http://localhost");
   const parts = url.pathname.split("/").filter(Boolean); // e.g. ["api","invites",":id"]
 
@@ -178,10 +197,5 @@ export async function handle(req, res) {
 // --------------------------------------------------------------- entrypoint
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await ensureStore();
-  http.createServer((req, res) => {
-    handle(req, res).catch((err) => {
-      const status = err.status || (/too large|invalid JSON/.test(err.message) ? 400 : 500);
-      send(res, status, { error: err.message });
-    });
-  }).listen(PORT, () => console.log(`Gogure Do backend listening on http://localhost:${PORT}`));
+  http.createServer(handle).listen(PORT, () => console.log(`Gogure Do backend listening on http://localhost:${PORT}`));
 }

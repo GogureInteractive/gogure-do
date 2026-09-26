@@ -72,6 +72,7 @@ test("setDurations updates idle timer but not a running one", () => {
   t.start();
   t.setDurations({ focus: 99, short: 5, long: 15 });
   assert.equal(t.getTotal(), 600); // unchanged while running
+  t.reset(); // clear the real setInterval so the test process can exit
 });
 
 test("logCustom records a manual session on the current mode", () => {
