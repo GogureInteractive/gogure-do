@@ -29,15 +29,23 @@ docs/           PRIVACY.md (DSGVO), ARCHITECTURE.md, CONTRIBUTING.md
 
 ## Getting started
 ```bash
-npm test                    # run all unit/integration tests (Node ≥ 18)
+npm test                    # run all unit/integration tests (Node ≥ 22)
 python3 -m http.server 8080 --directory src   # serve the app → http://localhost:8080
 node backend/server.js      # optional sync API → http://localhost:8787/api/health
 ```
 
 ## Deployment (GitHub Pages)
-`.github/workflows/deploy.yml` publishes `src/` with GitHub Actions (`actions/deploy-pages`).
-Push to `main` → the site is served from the `gh-pages` branch / `github.io` URL.
+`.github/workflows/deploy.yml` runs the test suite, then publishes `src/` as a Pages artifact
+(`actions/deploy-pages`, Pages source = *GitHub Actions*, no `gh-pages` branch).
+Push to `main` → live at <https://philppplik.github.io/gogure-do/>.
 Releases: `.github/workflows/release.yml` builds a zip asset on every `v*` tag.
+
+## CI & security
+- **CI** (`ci.yml`): tests on Node 22 / 24 / 26 for every push and PR; dependency review on PRs.
+- **CodeQL** (`codeql.yml`): static analysis of JavaScript and workflow files, on PRs and weekly.
+- **Dependabot** (`.github/dependabot.yml`): weekly updates for GitHub Actions (SHA-pinned) and npm.
+- `main` is protected: changes land via pull request with green checks.
+- Report vulnerabilities privately — see [SECURITY.md](SECURITY.md).
 
 ## Privacy (DSGVO)
 See **[docs/PRIVACY.md](docs/PRIVACY.md)** (German). Summary:

@@ -5,13 +5,13 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test --test-force-exit tests/",
+    "test": "node --test --test-force-exit \"tests/**/*.test.js\"",
     "serve:frontend": "python3 -m http.server 8080 --directory src",
     "serve:backend": "node backend/server.js"
   },
   "keywords": ["pomodoro", "adhd", "focus", "todo", "material-3", "gdpr"],
   "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }
