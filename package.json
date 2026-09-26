@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test --test-force-exit \"tests/**/*.test.js\"",
+    "test": "node --test \"tests/**/*.test.js\"",
     "serve:frontend": "python3 -m http.server 8080 --directory src",
     "serve:backend": "node backend/server.js"
   },
