@@ -1,0 +1,17 @@
+{
+  "name": "gogure-do",
+  "version": "1.0.0",
+  "description": "Gogure Do (\"Do\") — ADHD-optimised focus web app by Gogure Interactive Labs. Focus / short-break / long-break timer, planning, todos, calendar, invites, delegation. German UI, GDPR-first (local-first storage).",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test --test-force-exit tests/",
+    "serve:frontend": "python3 -m http.server 8080 --directory src",
+    "serve:backend": "node backend/server.js"
+  },
+  "keywords": ["pomodoro", "adhd", "focus", "todo", "material-3", "gdpr"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
